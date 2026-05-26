@@ -1,0 +1,725 @@
+/*
+** Author: SINCHANA PRAVEEN, TANMAY GODSE (The Data Architects) 
+** ASURITE ID: 1234368124, 1234028005
+** Course: IFT 530
+** SQL Server Version: MICROSOFT SQL SERVER 2019
+** Date Created: 12/03/2024
+**Comments: [Final Project: Instructo]
+*/
+
+
+-- Creating new database with name "The_Data_Architects"
+
+CREATE DATABASE The_Data_Architects;
+GO
+
+-- Switch to the database
+USE The_Data_Architects;
+GO
+
+
+--Step - 1: SQL Scripts to create tables
+----------------------------
+
+--1. User Table:
+--------------
+
+CREATE TABLE Users (
+    user_id INT IDENTITY(1,1) PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    role VARCHAR(50) CHECK (role IN ('student', 'instructor')) NOT NULL,
+    created_at DATETIME NOT NULL
+);
+
+--------------
+--2. Courses Table
+--------------
+
+CREATE TABLE Courses (
+    course_id INT IDENTITY(1,1) PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description VARCHAR(MAX) NOT NULL,
+    instructor_id INT NOT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (instructor_id) REFERENCES Users(user_id)
+);
+
+--------------
+--3. Assessments Table:
+--------------
+
+CREATE TABLE Assessments (
+    assessment_id INT IDENTITY(1,1) PRIMARY KEY,
+    course_id INT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    total_marks INT NOT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id)
+);
+
+--------------
+--4. Quizzes Table:
+--------------
+
+CREATE TABLE Quizzes (
+    quiz_id INT IDENTITY(1,1) PRIMARY KEY,
+    assessment_id INT NOT NULL,
+    quiz_content VARCHAR(MAX) NOT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id)
+);
+
+--------------
+--5. Student Scores Table:
+--------------
+
+CREATE TABLE Student_Scores (
+    score_id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    assessment_id INT NOT NULL,
+    score INT NOT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id)
+);
+
+--------------
+--6. Certification Table:
+--------------
+
+CREATE TABLE Certifications (
+    certification_id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    course_id INT NOT NULL,
+    issued_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id)
+);
+
+--------------
+--7. Course Content Table:
+--------------
+
+CREATE TABLE Course_Content (
+    content_id INT IDENTITY(1,1) PRIMARY KEY,
+    course_id INT NOT NULL,
+    content_text VARCHAR(MAX) NOT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id)
+);
+
+--------------
+--8. Audit Log Table:
+--------------
+
+CREATE TABLE Audit_Log (
+    log_id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NULL,
+    action VARCHAR(255) NOT NULL,
+    timestamp DATETIME NOT NULL,
+    details VARCHAR(MAX) NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
+
+--------------
+--9. Quiz Questions Table:
+--------------
+
+CREATE TABLE Quiz_Questions (
+    question_id INT IDENTITY(1,1) PRIMARY KEY,
+    quiz_id INT NOT NULL,
+    question_text VARCHAR(MAX) NOT NULL,
+    correct_answer VARCHAR(MAX) NOT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (quiz_id) REFERENCES Quizzes(quiz_id)
+);
+
+--------------
+--10. Quiz Responses Table:
+--------------
+
+CREATE TABLE Quiz_Responses (
+    response_id INT IDENTITY(1,1) PRIMARY KEY,
+    quiz_id INT NOT NULL,
+    user_id INT NOT NULL,
+    question_id INT NOT NULL,
+    selected_answer VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL,
+    FOREIGN KEY (quiz_id) REFERENCES Quizzes(quiz_id),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (question_id) REFERENCES Quiz_Questions(question_id)
+);
+
+
+----------------------------
+--Testing Script for Step 1:
+----------------------------
+
+-- Query to check Users
+SELECT * FROM Users;
+
+-- Query to check Courses
+SELECT * FROM Courses;
+
+-- Query to check Assessments
+SELECT * FROM Assessments;
+
+-- Query to check Quizzes
+SELECT * FROM Quizzes;
+
+-- Query to check Student Scores
+SELECT * FROM Student_Scores;
+
+-- Query to check Certifications
+SELECT * FROM Certifications;
+
+-- Query to check Course Content
+SELECT * FROM Course_Content;
+
+-- Query to check Audit Log
+SELECT * FROM Audit_Log;
+
+-- Query to check Quiz Questions
+SELECT * FROM Quiz_Questions;
+
+-- Query to check Quiz Responses
+SELECT * FROM Quiz_Responses;
+
+--------------------------------------------------------
+
+
+--Step - 2) ER Diagram : Attached In Word File.
+----------------------------
+
+--------------------------------------------------------
+
+
+--Step - 3) Populating Each Table:
+----------------------------
+
+
+--1. Populate Users Table:
+--------------
+
+INSERT INTO Users (username, password_hash, email, role, created_at) VALUES
+('AaravKumar', 'hash1', 'aarav.kumar@outlook.com', 'student', GETDATE()),
+('VivaanMehta', 'hash2', 'vivaan.mehta@outlook.com', 'student', GETDATE()),
+('AditiShah', 'hash3', 'aditi.shah@outlook.com', 'instructor', GETDATE()),
+('IshaanDutta', 'hash4', 'ishaan.dutta@outlook.com', 'student', GETDATE()),
+('VihaanRai', 'hash5', 'vihaan.rai@outlook.com', 'student', GETDATE()),
+('DiyaGupta', 'hash6', 'diya.gupta@outlook.com', 'instructor', GETDATE()),
+('SaanviSinha', 'hash7', 'saanvi.sinha@outlook.com', 'student', GETDATE()),
+('AanyaDhar', 'hash8', 'aanya.dhar@outlook.com', 'student', GETDATE()),
+('ArjunReddy', 'hash9', 'arjun.reddy@outlook.com', 'instructor', GETDATE()),
+('MiraNair', 'hash10', 'mira.nair@outlook.com', 'student', GETDATE()),
+('KabirSingh', 'hash11', 'kabir.singh@outlook.com', 'student', GETDATE());
+
+--------------
+--2. Populate Courses Table:
+--------------
+
+INSERT INTO Courses (title, description, instructor_id, created_at) VALUES
+('Introduction to Python', 'Python basics and advanced topics', 3, GETDATE()),
+('Data Structures', 'Comprehensive guide to data structures', 6, GETDATE()),
+('Web Development', 'From HTML to advanced web technologies', 9, GETDATE()),
+('Machine Learning', 'Algorithms and applications of machine learning', 6, GETDATE()),
+('Database Systems', 'Design and use of database systems', 3, GETDATE()),
+('Mobile App Development', 'Developing mobile applications on Android and iOS', 9, GETDATE()),
+('Cloud Computing', 'Introduction to cloud services and deployment', 6, GETDATE()),
+('Artificial Intelligence', 'AI concepts and real-world applications', 3, GETDATE()),
+('Cyber Security', 'Principles of securing digital systems', 9, GETDATE()),
+('Software Testing', 'Methods and techniques in software testing', 6, GETDATE()),
+('Operating Systems', 'Design and implementation of modern OS', 3, GETDATE());
+
+
+--------------
+--3. Populate Assessments Table:
+--------------
+
+INSERT INTO Assessments (course_id, title, total_marks, created_at) VALUES
+(1, 'Quiz 1', 100, GETDATE()),
+(2, 'Quiz 2', 100, GETDATE()),
+(3, 'Final Exam', 150, GETDATE()),
+(4, 'Midterm', 100, GETDATE()),
+(5, 'Project', 200, GETDATE()),
+(1, 'Lab Test', 50, GETDATE()),
+(2, 'Class Test', 75, GETDATE()),
+(3, 'Quiz 3', 100, GETDATE()),
+(4, 'Quiz 4', 100, GETDATE()),
+(5, 'Final Project', 250, GETDATE()),
+(1, 'Semester Test', 150, GETDATE());
+
+
+--------------
+--4. Populate Quizzes Table:
+--------------
+
+INSERT INTO Quizzes (assessment_id, quiz_content, created_at) VALUES
+(1, 'Python basics', GETDATE()),
+(2, 'Data structures fundamentals', GETDATE()),
+(3, 'HTML and CSS', GETDATE()),
+(4, 'Machine learning algorithms', GETDATE()),
+(5, 'Relational databases', GETDATE()),
+(1, 'Android basics', GETDATE()),
+(2, 'AWS services overview', GETDATE()),
+(3, 'AI impacts on society', GETDATE()),
+(4, 'How to secure APIs', GETDATE()),
+(5, 'Testing methodologies', GETDATE());
+
+
+--------------
+--5. Populate Student_Scores (Transactional Table) Table: 
+--------------
+
+INSERT INTO Student_Scores (user_id, assessment_id, score, created_at) VALUES
+(1, 1, 85, GETDATE()), (2, 1, 75, GETDATE()), (3, 1, 88, GETDATE()), (4, 1, 92, GETDATE()), (5, 1, 78, GETDATE()),
+(6, 1, 85, GETDATE()), (7, 1, 90, GETDATE()), (8, 1, 87, GETDATE()), (9, 1, 84, GETDATE()), (10, 1, 82, GETDATE()),
+(1, 2, 80, GETDATE()), (2, 2, 70, GETDATE()), (3, 2, 95, GETDATE()), (4, 2, 68, GETDATE()), (5, 2, 74, GETDATE()),
+(6, 2, 89, GETDATE()), (7, 2, 76, GETDATE()), (8, 2, 91, GETDATE()), (9, 2, 85, GETDATE()), (10, 2, 80, GETDATE()),
+(1, 3, 90, GETDATE()), (2, 3, 60, GETDATE()), (3, 3, 77, GETDATE()), (4, 3, 93, GETDATE()), (5, 3, 81, GETDATE()),
+(6, 3, 88, GETDATE()), (7, 3, 79, GETDATE()), (8, 3, 85, GETDATE()), (9, 3, 92, GETDATE()), (10, 3, 78, GETDATE()),
+(1, 4, 67, GETDATE()), (2, 4, 72, GETDATE()), (3, 4, 84, GETDATE()), (4, 4, 79, GETDATE()), (5, 4, 91, GETDATE()),
+(6, 4, 87, GETDATE()), (7, 4, 83, GETDATE()), (8, 4, 90, GETDATE()), (9, 4, 95, GETDATE()), (10, 4, 80, GETDATE()),
+(1, 5, 85, GETDATE()), (2, 5, 89, GETDATE()), (3, 5, 77, GETDATE()), (4, 5, 91, GETDATE()), (5, 5, 86, GETDATE()),
+(6, 5, 90, GETDATE()), (7, 5, 84, GETDATE()), (8, 5, 78, GETDATE()), (9, 5, 82, GETDATE()), (10, 5, 75, GETDATE()),
+(11, 1, 81, GETDATE()), (11, 2, 69, GETDATE()), (11, 3, 74, GETDATE()), (11, 4, 88, GETDATE()), (11, 5, 92, GETDATE());
+
+
+--------------
+--6. Populate Certifications Table: 
+--------------
+
+INSERT INTO Certifications (user_id, course_id, issued_at) VALUES
+(1, 1, GETDATE()), (2, 2, GETDATE()), (3, 3, GETDATE()), (4, 4, GETDATE()),
+(5, 5, GETDATE()), (6, 1, GETDATE()), (7, 2, GETDATE()), (8, 3, GETDATE()),
+(9, 4, GETDATE()), (10, 5, GETDATE()), (11, 1, GETDATE());
+
+
+--------------
+--7. Populate Course Content Table: 
+--------------
+
+INSERT INTO Course_Content (course_id, content_text, created_at) VALUES
+(1, 'Introduction to Programming using Python', GETDATE()),
+(2, 'Understanding Arrays and Lists', GETDATE()),
+(3, 'Basics of HTML and CSS', GETDATE()),
+(4, 'Introduction to Neural Networks', GETDATE()),
+(5, 'How to design relational databases', GETDATE()),
+(6, 'Developing first Android App', GETDATE()),
+(7, 'Deploying applications on AWS', GETDATE()),
+(8, 'Building AI with Python', GETDATE()),
+(9, 'Fundamentals of Cybersecurity', GETDATE()),
+(10, 'Techniques in Manual and Automated Testing', GETDATE()),
+(1, 'Advanced Python Programming', GETDATE());
+
+
+--------------
+--8. Populate Quiz Questions Table: 
+--------------
+
+INSERT INTO Quiz_Questions (quiz_id, question_text, correct_answer, created_at) VALUES
+(1, 'What is a variable?', 'A storage location and an associated symbolic name which contains some known or unknown quantity or information, a value.', GETDATE()),
+(2, 'What is an array?', 'Collection of items stored at contiguous memory locations.', GETDATE()),
+(3, 'What does HTML stand for?', 'Hyper Text Markup Language', GETDATE()),
+(4, 'What is a neural network?', 'A network or circuit of neurons, or in a modern sense, an artificial neural network, composed of artificial neurons or nodes.', GETDATE()),
+(5, 'What is a primary key?', 'A specific choice of a minimal set of attributes (columns) that uniquely specify a tuple (row) in a relation (table).', GETDATE()),
+(6, 'What is CSS?', 'Cascading Style Sheets', GETDATE()),
+(7, 'What is polymorphism in OOP?', 'The ability of different objects to respond in a unique way to the same message.', GETDATE()),
+(8, 'What does SQL stand for?', 'Structured Query Language', GETDATE()),
+(9, 'What is recursion?', 'A process in which a function calls itself as a subroutine.', GETDATE()),
+(10, 'What is a foreign key?', 'A key used to link two tables together.', GETDATE());
+
+
+--------------
+--9. Populate Quiz Responses Table: 
+--------------
+
+INSERT INTO Quiz_Responses (quiz_id, user_id, question_id, selected_answer, created_at) VALUES
+(1, 1, 1, 'A name given to a storage area that our programs can manipulate', GETDATE()),
+(1, 2, 1, 'A storage location and an associated symbolic name which contains some known or unknown quantity or information, a value.', GETDATE()),
+(2, 3, 2, 'Series of objects all of which are the same size and type.', GETDATE()),
+(2, 4, 2, 'Collection of items stored at contiguous memory locations.', GETDATE()),
+(3, 5, 3, 'Hyper Text Markup Language', GETDATE()),
+(6, 1, 6, 'Cascading Style Sheets', GETDATE()),
+(7, 2, 7, 'The ability of different objects to respond in a unique way to the same message.', GETDATE()),
+(8, 3, 8, 'Structured Query Language', GETDATE()),
+(9, 4, 9, 'A process where a function calls itself as a subroutine.', GETDATE()),
+(10, 5, 10, 'A key used to link two tables together.', GETDATE());
+
+
+--------------
+--10. Populate Audit Log Table: 
+--------------
+
+INSERT INTO Audit_Log (user_id, action, timestamp, details) VALUES
+(1, 'Created new user', GETDATE(), 'New user AaravKumar added to the system'),
+(2, 'Updated user email', GETDATE(), 'User VivaanMehta email updated'),
+(3, 'Deleted user', GETDATE(), 'User AditiShah removed from system'),
+(4, 'Created new course', GETDATE(), 'New course Introduction to Python added'),
+(5, 'Updated course content', GETDATE(), 'Content for Data Structures updated'),
+(1, 'Logged in', GETDATE(), 'User AaravKumar logged into the system'),
+(2, 'Logged out', GETDATE(), 'User VivaanMehta logged out of the system'),
+(3, 'Password change', GETDATE(), 'User AditiShah changed password'),
+(4, 'Assigned role', GETDATE(), 'User AaravKumar assigned role of Instructor'),
+(5, 'Created new quiz', GETDATE(), 'Quiz "Advanced SQL" created by user PriyaSingh'),
+(1, 'Updated user profile', GETDATE(), 'User AaravKumar updated profile picture');
+
+
+
+--------------------------------------------------------
+
+-- Step - 4) Create 3 Queries and Convert Them to Views:
+----------------------------
+
+-- 1. View: Enrolled Students List
+
+-- Purpose: This view displays a list of students enrolled in each course along with the course title, aimed at instructors for managing and viewing their student enrollments.
+
+CREATE VIEW EnrolledStudents AS
+SELECT 
+    c.title AS CourseTitle, 
+    u.username AS StudentName
+FROM 
+    Courses c
+JOIN 
+    Users u ON c.instructor_id = u.user_id
+WHERE 
+    u.role = 'student' 
+    AND c.description LIKE '%programming%';
+GO
+
+--------------
+
+-- 2. View: Course Performance Overview
+
+-- Purpose: Provides an overview of average scores per course, useful for academic advisors and instructors to gauge the overall performance of students in each course and identify courses that may require additional support or resources.
+
+CREATE VIEW CoursePerformanceOverview AS
+SELECT 
+    c.title AS CourseTitle, 
+    AVG(s.score) AS AverageScore
+FROM 
+    Courses c
+JOIN 
+    Assessments a ON c.course_id = a.course_id
+JOIN 
+    Student_Scores s ON a.assessment_id = s.assessment_id
+WHERE 
+    s.score IS NOT NULL
+GROUP BY 
+    c.title;
+GO
+
+--------------
+
+-- 3. View: Active Courses and Their Content
+
+-- Purpose: Shows active courses along with their content details. It's intended for students to explore available course materials and manage their learning schedule effectively.
+
+CREATE VIEW ActiveCoursesContent AS
+SELECT 
+    c.title AS CourseTitle, 
+    cc.content_text AS ContentDetails
+FROM 
+    Courses c
+JOIN 
+    Course_Content cc ON c.course_id = cc.course_id
+WHERE 
+    c.created_at > DATEADD(DAY, -3, GETDATE());
+GO
+
+----------------------------
+Testing Script for Step - 4:
+----------------------------
+
+-- 1. Testing the Enrolled Students View
+SELECT * FROM EnrolledStudents;
+
+-- 2. Testing the Course Performance Overview View
+SELECT * FROM CoursePerformanceOverview;
+
+-- 3. Testing the Active Courses and Their Content View
+SELECT * FROM ActiveCoursesContent;
+
+
+--------------------------------------------------------
+
+
+-- Step - 5) Creating Triggers for the Audit_Log Table
+----------------------------
+
+-- 1. Trigger for Insert: 
+
+CREATE TRIGGER AfterInsertUsers
+ON Users
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Audit_Log(user_id, action, timestamp, details)
+    SELECT 
+        i.user_id, 
+        'INSERT', 
+        GETDATE(), 
+        CONCAT('User ', i.username, ' added.')
+    FROM 
+        INSERTED i;
+END;
+GO
+
+--------------
+
+-- 2. Trigger for Update:
+
+CREATE TRIGGER AfterUpdateUsers
+ON Users
+AFTER UPDATE
+AS
+BEGIN
+    INSERT INTO Audit_Log(user_id, action, timestamp, details)
+    SELECT 
+        i.user_id, 
+        'UPDATE', 
+        GETDATE(), 
+        CONCAT('User updated from ', d.username, ' to ', i.username)
+    FROM 
+        INSERTED i
+    JOIN 
+        DELETED d ON i.user_id = d.user_id;
+END;
+GO
+
+--------------
+
+-- 3. Trigger for Delete:
+
+CREATE TRIGGER AfterDeleteUsers
+ON Users
+AFTER DELETE
+AS
+BEGIN
+    INSERT INTO Audit_Log(user_id, action, timestamp, details)
+    SELECT 
+        d.user_id, 
+        'DELETE', 
+        GETDATE(), 
+        CONCAT('User ', d.username, ' deleted.')
+    FROM 
+        DELETED d;
+END;
+GO
+
+
+------------------------------------------
+
+-- Testing Triggers:
+----------------------------
+
+-- Assuming you have a user_id to insert into Audit_Log
+DECLARE @UserId INT;
+
+-- 1. Insert User if not exists
+IF NOT EXISTS (SELECT 1 FROM Users WHERE username = 'TestUser')
+BEGIN
+    INSERT INTO Users (username, password_hash, email, role, created_at)
+    VALUES ('TestUser', 'testhash', 'testuser@gmail.com', 'student', GETDATE());
+END
+
+-- Get the user_id of the newly inserted or existing user
+SELECT @UserId = user_id FROM Users WHERE username = 'TestUser';
+
+-- 2. Insert into Audit_Log only if user_id exists
+IF @UserId IS NOT NULL
+BEGIN
+    INSERT INTO Audit_Log (user_id, action, timestamp)
+    VALUES (@UserId, 'User Created', GETDATE());
+END
+
+-- 3. Update User
+IF EXISTS (SELECT 1 FROM Users WHERE username = 'TestUser')
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE username = 'UpdatedUser')
+    BEGIN
+        UPDATE Users
+        SET username = 'UpdatedUser'
+        WHERE username = 'TestUser';
+    END
+END
+
+-- 4. Delete User
+IF EXISTS (SELECT 1 FROM Users WHERE username = 'UpdatedUser')
+BEGIN
+    -- First, delete related entries in Audit_Log
+    DELETE FROM Audit_Log
+    WHERE user_id = (SELECT user_id FROM Users WHERE username = 'UpdatedUser');
+
+    -- Now delete the user
+    DELETE FROM Users
+    WHERE username = 'UpdatedUser';
+END
+
+-- 5. Query Audit_Log Table
+SELECT * FROM Audit_Log;
+
+
+
+--------------------------------------------------------
+
+
+-- Step 6: Stored Procedure and User Defined Function (UDF)
+----------------------------
+
+-- Stored Procedure: The GetUserByEmail stored procedure retrieves user information based on the provided email address.
+
+CREATE PROCEDURE GetUserByEmail 
+    @Email VARCHAR(100)  -- Parameter declaration 
+AS
+BEGIN
+    SELECT * FROM Users WHERE email = @Email; 
+END;
+GO
+
+-- UDF: The CalculateTotalMarks UDF calculates the total marks for a specific course based on the course_id provided.
+
+CREATE FUNCTION CalculateTotalMarks (@CourseID INT)  -- Parameter declaration
+RETURNS INT
+AS
+BEGIN
+    DECLARE @TotalMarks INT; 
+    SELECT @TotalMarks = SUM(total_marks) FROM Assessments WHERE course_id = @CourseID;  
+    RETURN @TotalMarks;  -- Return the variable
+END;
+GO
+
+
+--------------------------------------------------------
+
+
+--Step 7: Stored Procedure with Cursor:
+----------------------------
+
+
+--Designing a stored procedure named ProcessStudentCertificationsAdvanced that performs the following tasks:
+
+--    Identify Eligible Students:
+--        Iterate through each student to determine if they have successfully completed all assessments within a specific course.
+
+--    Issue Certifications:
+--        If a student has passed all assessments in a course and hasn't already been certified for that course, issue a certification by inserting a record into the Certifications table.
+
+--    Audit Logging:
+--        Log each certification issuance and any errors encountered during the process into the Audit_Log table for tracking and accountability.
+
+--    Local cursors are automatically deallocated when their scope ends.
+
+--------------
+
+
+-- =============================================
+-- Author:         Your Name
+-- Create date:    YYYY-MM-DD
+-- Description:    Processes student scores to issue certifications for courses upon successful completion of all assessments.
+-- =============================================
+CREATE PROCEDURE ProcessStudentCertificationsAdvanced
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Declare variables to hold data fetched from the cursor
+    DECLARE @UserID INT;
+    DECLARE @CourseID INT;
+    DECLARE @TotalAssessments INT;
+    DECLARE @PassedAssessments INT;
+    DECLARE @CertificationID INT;
+    DECLARE @Action VARCHAR(255);
+    DECLARE @Details VARCHAR(MAX);
+    DECLARE @ErrorMessage NVARCHAR(4000);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Declaring the cursor to select distinct student-course pairs without existing certifications
+        DECLARE cert_cursor CURSOR LOCAL FAST_FORWARD FOR
+        SELECT DISTINCT ss.user_id, a.course_id
+        FROM Student_Scores ss
+        INNER JOIN Assessments a ON ss.assessment_id = a.assessment_id
+        INNER JOIN Users u ON ss.user_id = u.user_id
+        LEFT JOIN Certifications c ON ss.user_id = c.user_id AND a.course_id = c.course_id
+        WHERE u.role = 'student'
+          AND c.certification_id IS NULL; -- Only process students without existing certifications for the course
+
+        -- Open the cursor
+        OPEN cert_cursor;
+
+        -- Fetching the first row from the cursor
+        FETCH NEXT FROM cert_cursor INTO @UserID, @CourseID;
+
+        -- Looping through all fetched rows
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            -- 1. Calculating the total number of assessments in the course
+            SELECT @TotalAssessments = COUNT(*)
+            FROM Assessments
+            WHERE course_id = @CourseID;
+
+            -- 2. Calculating the number of assessments the student has passed in the course
+            SELECT @PassedAssessments = COUNT(*)
+            FROM Student_Scores ss
+            INNER JOIN Assessments a ON ss.assessment_id = a.assessment_id
+            WHERE ss.user_id = @UserID
+              AND a.course_id = @CourseID
+              AND ss.score >= 50; -- Assuming 50 is the passing score threshold
+
+            -- 3. Checking if the student has passed all assessments
+            IF @PassedAssessments = @TotalAssessments
+            BEGIN
+                -- 4. Issuing Certification by inserting into Certifications table
+                INSERT INTO Certifications (user_id, course_id, issued_at)
+                VALUES (@UserID, @CourseID, GETDATE());
+
+                -- Retrieving the newly inserted certification ID
+                SET @CertificationID = SCOPE_IDENTITY();
+
+                -- 5. Loging the certification issuance into Audit_Log
+                SET @Action = 'Issued Certification';
+                SET @Details = CONCAT('Certification ID ', @CertificationID, 
+                                       ' issued to User ID ', @UserID, 
+                                       ' for Course ID ', @CourseID, 
+                                       ' on ', CONVERT(VARCHAR, GETDATE(), 120));
+                INSERT INTO Audit_Log (user_id, action, timestamp, details)
+                VALUES (@UserID, @Action, GETDATE(), @Details);
+            END
+
+            -- Fetching the next row from the cursor
+            FETCH NEXT FROM cert_cursor INTO @UserID, @CourseID;
+        END
+
+        -- Closing and deallocate the cursor to free resources
+	-- Local cursors are automatically deallocated when their scope ends.
+        CLOSE cert_cursor;
+        DEALLOCATE cert_cursor;
+
+        -- Committing the transaction upon successful completion
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Capture error details
+        SET @ErrorMessage = ERROR_MESSAGE();
+        SET @ErrorSeverity = ERROR_SEVERITY();
+        SET @ErrorState = ERROR_STATE();
+
+        -- Rollback the transaction in case of an error
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        -- Log the error into Audit_Log
+        INSERT INTO Audit_Log (user_id, action, timestamp, details)
+        VALUES (NULL, 'Error', GETDATE(), CONCAT('Error processing certifications: ', @ErrorMessage));
+
+        -- Raise the error to notify the caller
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
